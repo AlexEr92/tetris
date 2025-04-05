@@ -1,3 +1,4 @@
+use sdl2::rect::Rect;
 use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
 use std::thread::sleep;
 use std::time::Duration;
@@ -20,9 +21,18 @@ fn main() {
         .build()
         .expect("Failed to convert window into canvas");
 
-    canvas.set_draw_color(Color::RGB(255, 0, 0));
-    canvas.clear();
-    canvas.present();
+    let texture_creator = canvas.texture_creator();
+
+    let mut square_texture = texture_creator
+        .create_texture_target(None, 32, 32)
+        .expect("Failed to create texture");
+
+    canvas
+        .with_texture_canvas(&mut square_texture, |texture| {
+            texture.set_draw_color(Color::RGB(0, 255, 0));
+            texture.clear();
+        })
+        .expect("Failed to color a texture");
 
     let mut running = true;
     let mut event_pump = sdl_context
@@ -42,6 +52,12 @@ fn main() {
                 _ => {}
             }
         }
+        canvas.set_draw_color(Color::RGB(255, 0, 0));
+        canvas.clear();
+        canvas
+            .copy(&square_texture, None, Rect::new(0, 0, 32, 32))
+            .expect("Couldn't copy texture into window");
+        canvas.present();
         sleep(Duration::new(0, 1_000_000_000u32 / 60));
     }
 }
