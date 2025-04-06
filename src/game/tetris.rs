@@ -28,6 +28,32 @@ impl Tetris {
         }
     }
 
+    fn check_lines(&mut self) {
+        let mut y = 0;
+
+        while y < self.game_map.len() {
+            let mut complete = true;
+
+            for x in &self.game_map[y] {
+                if *x == 0 {
+                    complete = false;
+                    break;
+                }
+            }
+
+            if complete == true {
+                self.game_map.remove(y);
+                y -= 1;
+            }
+
+            y += 1;
+        }
+
+        while self.game_map.len() < 16 {
+            self.game_map.insert(0, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+        }
+    }
+
     fn create_new_tetromino(&mut self) -> Tetromino {
         let mut rand_number = rand::random::<u8>() % 7;
         // if the generated tetromino is the same as the previous one,
