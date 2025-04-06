@@ -8,7 +8,7 @@ pub struct Tetromino {
     pub current_state: u8, // current state
 }
 
-trait TetrominoGenerator {
+pub trait TetrominoGenerator {
     fn new() -> Tetromino;
 }
 
