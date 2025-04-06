@@ -3,6 +3,8 @@ use sdl2::{event::Event, keyboard::Keycode, pixels::Color};
 use std::thread::sleep;
 use std::time::Duration;
 
+mod game;
+
 fn main() {
     let sdl_context = sdl2::init().expect("SDL initialization failed");
     let video_subsystem = sdl_context
