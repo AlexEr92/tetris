@@ -37,12 +37,49 @@ impl Tetris {
         tetris
     }
 
-    fn check_lines(&mut self) {
+    fn check_lines(&mut self) -> u32 {
+        let before = self.game_map.len();
         self.game_map.retain(|row| row.iter().any(|&cell| cell == 0));
+        let cleared = (before - self.game_map.len()) as u32;
 
         while self.game_map.len() < 16 {
             self.game_map.insert(0, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         }
+        cleared
+    }
+
+    fn update_score_and_level(&mut self, lines_cleared: u32) {
+        let points = match lines_cleared {
+            1 => 100,
+            2 => 300,
+            3 => 500,
+            4 => 800,
+            _ => 0,
+        } * self.current_level;
+
+        self.score += points;
+        self.cleared_lines += lines_cleared;
+        self.current_level = (self.cleared_lines / 10) + 1;
+    }
+
+    pub fn score(&self) -> u32 {
+        self.score
+    }
+
+    pub fn current_level(&self) -> u32 {
+        self.current_level
+    }
+
+    pub fn cleared_lines(&self) -> u32 {
+        self.cleared_lines
+    }
+
+    pub fn game_map(&self) -> &Vec<Vec<u8>> {
+        &self.game_map
+    }
+
+    pub fn current_tetromino(&self) -> &Option<Tetromino> {
+        &self.current_tetromino
     }
 
     fn is_valid_position(&self, tetromino: &Tetromino) -> bool {
@@ -178,7 +215,8 @@ impl Tetris {
                     }
                 }
             }
-            self.check_lines();
+            let cleared = self.check_lines();
+            self.update_score_and_level(cleared);
         }
     }
 
