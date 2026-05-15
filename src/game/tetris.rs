@@ -56,6 +56,63 @@ impl Tetris {
         true
     }
 
+    pub fn move_left(&mut self) {
+        if let Some(mut tetromino) = self.current_tetromino.take() {
+            tetromino.x -= 1;
+            if !self.is_valid_position(&tetromino) {
+                tetromino.x += 1;
+            }
+            self.current_tetromino = Some(tetromino);
+        }
+    }
+
+    pub fn move_right(&mut self) {
+        if let Some(mut tetromino) = self.current_tetromino.take() {
+            tetromino.x += 1;
+            if !self.is_valid_position(&tetromino) {
+                tetromino.x -= 1;
+            }
+            self.current_tetromino = Some(tetromino);
+        }
+    }
+
+    pub fn rotate(&mut self) {
+        if let Some(mut tetromino) = self.current_tetromino.take() {
+            let original_state = tetromino.current_state;
+            let num_states = tetromino.states.len() as u8;
+            tetromino.current_state = (tetromino.current_state + 1) % num_states;
+
+            if !self.is_valid_position(&tetromino) {
+                // Wall kick: try shifting left
+                tetromino.x -= 1;
+                if !self.is_valid_position(&tetromino) {
+                    // Try shifting right (from original position)
+                    tetromino.x += 2;
+                    if !self.is_valid_position(&tetromino) {
+                        // Revert everything
+                        tetromino.x -= 1;
+                        tetromino.current_state = original_state;
+                    }
+                }
+            }
+            self.current_tetromino = Some(tetromino);
+        }
+    }
+
+    /// Returns true if the tetromino could not move down (locked in place).
+    pub fn move_down(&mut self) -> bool {
+        if let Some(mut tetromino) = self.current_tetromino.take() {
+            tetromino.y += 1;
+            if !self.is_valid_position(&tetromino) {
+                tetromino.y -= 1;
+                self.current_tetromino = Some(tetromino);
+                return true;
+            }
+            self.current_tetromino = Some(tetromino);
+        }
+        false
+    }
+
     fn create_new_tetromino(&mut self) -> Tetromino {
         let mut rand_number = rand::random::<u8>() % 7;
         // if the generated tetromino is the same as the previous one,
