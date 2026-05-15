@@ -29,29 +29,31 @@ impl Tetris {
     }
 
     fn check_lines(&mut self) {
-        let mut y = 0;
-
-        while y < self.game_map.len() {
-            let mut complete = true;
-
-            for x in &self.game_map[y] {
-                if *x == 0 {
-                    complete = false;
-                    break;
-                }
-            }
-
-            if complete == true {
-                self.game_map.remove(y);
-                y -= 1;
-            }
-
-            y += 1;
-        }
+        self.game_map.retain(|row| row.iter().any(|&cell| cell == 0));
 
         while self.game_map.len() < 16 {
             self.game_map.insert(0, vec![0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
         }
+    }
+
+    fn is_valid_position(&self, tetromino: &Tetromino) -> bool {
+        let state = &tetromino.states[tetromino.current_state as usize];
+        for (dy, row) in state.iter().enumerate() {
+            for (dx, &cell) in row.iter().enumerate() {
+                if cell == 0 {
+                    continue;
+                }
+                let x = tetromino.x + dx as isize;
+                let y = tetromino.y + dy;
+                if x < 0 || x >= 10 || y >= 16 {
+                    return false;
+                }
+                if y < 16 && self.game_map[y][x as usize] != 0 {
+                    return false;
+                }
+            }
+        }
+        true
     }
 
     fn create_new_tetromino(&mut self) -> Tetromino {
