@@ -39,7 +39,7 @@ impl Tetris {
 
     fn check_lines(&mut self) -> u32 {
         let before = self.game_map.len();
-        self.game_map.retain(|row| row.iter().any(|&cell| cell == 0));
+        self.game_map.retain(|row| row.contains(&0));
         let cleared = (before - self.game_map.len()) as u32;
 
         while self.game_map.len() < 16 {
@@ -91,7 +91,7 @@ impl Tetris {
                 }
                 let x = tetromino.x + dx as isize;
                 let y = tetromino.y + dy;
-                if x < 0 || x >= 10 || y >= 16 {
+                if !(0..10).contains(&x) || y >= 16 {
                     return false;
                 }
                 if y < 16 && self.game_map[y][x as usize] != 0 {
@@ -112,7 +112,7 @@ impl Tetris {
                     }
                     let x = tetromino.x + dx as isize;
                     let y = tetromino.y + dy + 1;
-                    if x < 0 || x >= 10 || y >= 16 {
+                    if !(0..10).contains(&x) || y >= 16 {
                         return true;
                     }
                     if y < 16 && self.game_map[y][x as usize] != 0 {
@@ -183,7 +183,9 @@ impl Tetris {
             if !self.is_valid_position(&tetromino) {
                 tetromino.y -= 1;
                 self.current_tetromino = Some(tetromino);
-                self.lock_delay_remaining = Some(Duration::from_millis(500));
+                if self.lock_delay_remaining.is_none() {
+                    self.lock_delay_remaining = Some(Duration::from_millis(500));
+                }
                 return true;
             }
             self.current_tetromino = Some(tetromino);
@@ -201,7 +203,7 @@ impl Tetris {
         Duration::from_secs_f64(seconds)
     }
 
-    fn lock_tetromino(&mut self) {
+    pub fn lock_tetromino(&mut self) {
         if let Some(tetromino) = self.current_tetromino.take() {
             let state = &tetromino.states[tetromino.current_state as usize];
             for (dy, row) in state.iter().enumerate() {
